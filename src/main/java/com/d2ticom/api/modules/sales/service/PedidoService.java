@@ -15,10 +15,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class PedidoService {
@@ -27,8 +27,8 @@ public class PedidoService {
     private final ProdutoRepository produtoRepository;
     private final EstoqueService estoqueService;
 
-    public PedidoService(PedidoRepository pedidoRepository, 
-                         ProdutoRepository produtoRepository, 
+    public PedidoService(PedidoRepository pedidoRepository,
+                         ProdutoRepository produtoRepository,
                          EstoqueService estoqueService) {
         this.pedidoRepository = pedidoRepository;
         this.produtoRepository = produtoRepository;
@@ -41,12 +41,19 @@ public class PedidoService {
             throw new IllegalArgumentException("O pedido precisa conter ao menos um item.");
         }
 
+        StatusPedido status = dto.status() != null ? dto.status() : StatusPedido.ORCAMENTO;
+
         Pedido pedido = new Pedido();
-        pedido.setNumero("PED-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         pedido.setClienteId(dto.clienteId());
-        pedido.setStatus(dto.status() != null ? dto.status() : StatusPedido.ORCAMENTO);
+        pedido.setStatus(status);
         pedido.setFormaPagamento(dto.formaPagamento());
         pedido.setValorDesconto(dto.valorDesconto() != null ? dto.valorDesconto() : BigDecimal.ZERO);
+
+        if (status == StatusPedido.ORCAMENTO) {
+            pedido.setNumeroOrcamento(gerarNumeroOrcamento());
+        } else if (status == StatusPedido.FINALIZADO) {
+            pedido.setNumeroVenda(gerarNumeroVendaDireta());
+        }
 
         BigDecimal totalItens = BigDecimal.ZERO;
         List<ItemPedido> itens = new ArrayList<>();
@@ -65,7 +72,7 @@ public class PedidoService {
         pedido.setItens(itens);
         pedido.setValorTotal(totalItens.subtract(pedido.getValorDesconto()));
 
-        if (pedido.getStatus() == StatusPedido.FINALIZADO) {
+        if (status == StatusPedido.FINALIZADO) {
             pedido.setFinalizadoAt(LocalDateTime.now());
             pedidoRepository.save(pedido);
 
@@ -90,6 +97,14 @@ public class PedidoService {
 
         if (pedido.getStatus() == StatusPedido.CANCELADO) {
             throw new IllegalStateException("Não é possível finalizar um pedido cancelado.");
+        }
+
+        String numeroOrcamento = pedido.getNumeroOrcamento();
+        if (numeroOrcamento != null) {
+            pedido.setNumeroOrcamentoOrigem(numeroOrcamento);
+            pedido.setNumeroVenda(numeroOrcamento.replaceFirst("^PED-", "VND-"));
+        } else {
+            pedido.setNumeroVenda(gerarNumeroVendaDireta());
         }
 
         for (ItemPedido item : pedido.getItens()) {
@@ -133,6 +148,31 @@ public class PedidoService {
             .toList();
     }
 
+    private String gerarNumeroOrcamento() {
+        LocalDate hoje = LocalDate.now();
+        int ano = hoje.getYear();
+        int diaDoAno = hoje.getDayOfYear();
+
+        long orcamentosHoje = pedidoRepository.countByStatusAndCreatedAtBetween(
+            StatusPedido.ORCAMENTO,
+            hoje.atStartOfDay(),
+            hoje.plusDays(1).atStartOfDay()
+        );
+
+        int seq = (int) orcamentosHoje + 1;
+        if (seq > 99) {
+            throw new IllegalStateException("Limite diário de orçamentos atingido (99).");
+        }
+
+        return String.format("PED-%d-%03d%02d", ano, diaDoAno, seq);
+    }
+
+    private String gerarNumeroVendaDireta() {
+        LocalDate hoje = LocalDate.now();
+        long vendas = pedidoRepository.countByNumeroVendaStartingWith(String.format("VND-%d-", hoje.getYear()));
+        return String.format("VND-%d-%05d", hoje.getYear(), vendas + 1);
+    }
+
     private PedidoResponseDTO toResponseDTO(Pedido p) {
         List<ItemPedidoDTO> itensDto = p.getItens().stream()
             .map(item -> new ItemPedidoDTO(
@@ -145,7 +185,10 @@ public class PedidoService {
 
         return new PedidoResponseDTO(
             p.getId(),
-            p.getNumero(),
+            p.getNumeroExibicao(),
+            p.getNumeroOrcamento(),
+            p.getNumeroVenda(),
+            p.getNumeroOrcamentoOrigem(),
             p.getClienteId(),
             p.getStatus(),
             p.getFormaPagamento(),

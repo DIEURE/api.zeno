@@ -8,14 +8,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record PedidoResponseDTO(
-    Long id,
-    String numero,
-    Long clienteId,
-    StatusPedido status,
-    FormaPagamento formaPagamento,
-    BigDecimal valorTotal,
-    BigDecimal valorDesconto,
-    LocalDateTime createdAt,
-    LocalDateTime finalizadoAt,
-    List<ItemPedidoDTO> itens
-) {}
+	    Long id,
+	    String numero,                 // exibição: VND se houver, senão PED
+	    String numeroOrcamento,
+	    String numeroVenda,
+	    String numeroOrcamentoOrigem,
+	    Long clienteId,
+	    StatusPedido status,
+	    FormaPagamento formaPagamento,
+	    BigDecimal valorTotal,
+	    BigDecimal valorDesconto,
+	    LocalDateTime createdAt,
+	    LocalDateTime finalizadoAt,
+	    List<ItemPedidoDTO> itens
+	) {}

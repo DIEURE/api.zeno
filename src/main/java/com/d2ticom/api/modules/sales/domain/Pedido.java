@@ -14,8 +14,14 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 20)
-    private String numero;
+    @Column(name = "numero_orcamento", unique = true, length = 20)
+    private String numeroOrcamento;
+
+    @Column(name = "numero_venda", unique = true, length = 20)
+    private String numeroVenda;
+
+    @Column(name = "numero_orcamento_origem", length = 20)
+    private String numeroOrcamentoOrigem;
 
     @Column(name = "cliente_id")
     private Long clienteId;
@@ -55,8 +61,14 @@ public class Pedido {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public String getNumero() { return numero; }
-    public void setNumero(String numero) { this.numero = numero; }
+    public String getNumeroOrcamento() { return numeroOrcamento; }
+    public void setNumeroOrcamento(String numeroOrcamento) { this.numeroOrcamento = numeroOrcamento; }
+
+    public String getNumeroVenda() { return numeroVenda; }
+    public void setNumeroVenda(String numeroVenda) { this.numeroVenda = numeroVenda; }
+
+    public String getNumeroOrcamentoOrigem() { return numeroOrcamentoOrigem; }
+    public void setNumeroOrcamentoOrigem(String numeroOrcamentoOrigem) { this.numeroOrcamentoOrigem = numeroOrcamentoOrigem; }
 
     public Long getClienteId() { return clienteId; }
     public void setClienteId(Long clienteId) { this.clienteId = clienteId; }
@@ -81,4 +93,11 @@ public class Pedido {
 
     public LocalDateTime getFinalizadoAt() { return finalizadoAt; }
     public void setFinalizadoAt(LocalDateTime finalizadoAt) { this.finalizadoAt = finalizadoAt; }
+
+    /** Nome exibível: prefere a venda, cai pro orçamento se ainda não converteu. */
+    @Transient
+    public String getNumeroExibicao() {
+        if (numeroVenda != null) return numeroVenda;
+        return numeroOrcamento;
+    }
 }

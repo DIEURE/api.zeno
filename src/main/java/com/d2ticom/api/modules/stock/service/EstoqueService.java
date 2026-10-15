@@ -28,12 +28,21 @@ public class EstoqueService {
         Produto produto = produtoRepository.findById(produtoId)
             .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado ID: " + produtoId));
 
+        if (produto.getEstoqueSaldo().compareTo(quantidade) < 0) {
+            throw new IllegalStateException(
+                "Estoque insuficiente para " + produto.getDescricao()
+                + ". Disponível: " + produto.getEstoqueSaldo()
+                + ", solicitado: " + quantidade
+            );
+        }
+
         produto.setEstoqueSaldo(produto.getEstoqueSaldo().subtract(quantidade));
         produtoRepository.save(produto);
 
         MovimentacaoEstoque mov = new MovimentacaoEstoque(produto, TipoMovimentacao.SAIDA_VENDA, quantidade, pedidoId);
         movimentacaoEstoqueRepository.save(mov);
     }
+
 
     @Transactional
     public void estornarEstoque(Long produtoId, BigDecimal quantidade, Long pedidoId) {
