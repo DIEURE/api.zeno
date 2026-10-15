@@ -174,14 +174,15 @@ public class PedidoService {
     }
 
     private PedidoResponseDTO toResponseDTO(Pedido p) {
-        List<ItemPedidoDTO> itensDto = p.getItens().stream()
-            .map(item -> new ItemPedidoDTO(
-                item.getProduto().getId(),
-                item.getProduto().getDescricao(),
-                item.getQuantidade(),
-                item.getPrecoUnitario(),
-                item.getSubtotal()
-            )).toList();
+    	List<ItemPedidoDTO> itensDto = p.getItens().stream()
+    		    .map(item -> new ItemPedidoDTO(
+    		        item.getProduto().getId(),
+    		        item.getProduto().getDescricao(),
+    		        item.getProduto().getUnidade(),
+    		        item.getQuantidade(),
+    		        item.getPrecoUnitario(),
+    		        item.getSubtotal()
+    		    )).toList();
 
         return new PedidoResponseDTO(
             p.getId(),
