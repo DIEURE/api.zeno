@@ -19,4 +19,7 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     long countByStatusAndCreatedAtBetween(StatusPedido status, LocalDateTime inicio, LocalDateTime fim);
 
     long countByNumeroVendaStartingWith(String prefixo);
+    
+    long countByNumeroOrcamentoStartingWith(String prefixo);
+
 }

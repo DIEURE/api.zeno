@@ -1,5 +1,6 @@
 package com.d2ticom.api.modules.sales.controller;
 
+import com.d2ticom.api.modules.sales.dto.FinalizacaoRequestDTO;
 import com.d2ticom.api.modules.sales.dto.PedidoRequestDTO;
 import com.d2ticom.api.modules.sales.dto.PedidoResponseDTO;
 import com.d2ticom.api.modules.sales.service.PedidoService;
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -26,8 +28,14 @@ public class PedidoController {
     }
 
     @PatchMapping("/{id}/finalizar")
-    public ResponseEntity<PedidoResponseDTO> finalizarOrcamento(@PathVariable Long id) {
-        return ResponseEntity.ok(pedidoService.finalizarOrcamento(id));
+    public ResponseEntity<PedidoResponseDTO> finalizarOrcamento(
+            @PathVariable Long id,
+            @RequestBody(required = false) FinalizacaoRequestDTO dto) {
+        BigDecimal desconto = (dto != null && dto.valorDesconto() != null)
+            ? dto.valorDesconto()
+            : BigDecimal.ZERO;
+        String senha = dto != null ? dto.senhaAutorizacao() : null;
+        return ResponseEntity.ok(pedidoService.finalizarOrcamento(id, desconto, senha));
     }
 
     @PatchMapping("/{id}/cancelar")

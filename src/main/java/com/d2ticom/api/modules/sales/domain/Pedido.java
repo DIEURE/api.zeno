@@ -40,6 +40,12 @@ public class Pedido {
     @Column(name = "valor_desconto", precision = 15, scale = 2)
     private BigDecimal valorDesconto = BigDecimal.ZERO;
 
+    @Column(name = "desconto_autorizado_por", length = 100)
+    private String descontoAutorizadoPor;
+
+    @Column(name = "desconto_autorizado_em")
+    private LocalDateTime descontoAutorizadoEm;
+
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemPedido> itens = new ArrayList<>();
 
@@ -85,6 +91,12 @@ public class Pedido {
     public BigDecimal getValorDesconto() { return valorDesconto; }
     public void setValorDesconto(BigDecimal valorDesconto) { this.valorDesconto = valorDesconto; }
 
+    public String getDescontoAutorizadoPor() { return descontoAutorizadoPor; }
+    public void setDescontoAutorizadoPor(String descontoAutorizadoPor) { this.descontoAutorizadoPor = descontoAutorizadoPor; }
+
+    public LocalDateTime getDescontoAutorizadoEm() { return descontoAutorizadoEm; }
+    public void setDescontoAutorizadoEm(LocalDateTime descontoAutorizadoEm) { this.descontoAutorizadoEm = descontoAutorizadoEm; }
+
     public List<ItemPedido> getItens() { return itens; }
     public void setItens(List<ItemPedido> itens) { this.itens = itens; }
 
@@ -94,7 +106,6 @@ public class Pedido {
     public LocalDateTime getFinalizadoAt() { return finalizadoAt; }
     public void setFinalizadoAt(LocalDateTime finalizadoAt) { this.finalizadoAt = finalizadoAt; }
 
-    /** Nome exibível: prefere a venda, cai pro orçamento se ainda não converteu. */
     @Transient
     public String getNumeroExibicao() {
         if (numeroVenda != null) return numeroVenda;

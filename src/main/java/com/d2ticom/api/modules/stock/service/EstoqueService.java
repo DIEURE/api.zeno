@@ -17,7 +17,7 @@ public class EstoqueService {
     private final ProdutoRepository produtoRepository;
     private final MovimentacaoEstoqueRepository movimentacaoEstoqueRepository;
 
-    public EstoqueService(ProdutoRepository produtoRepository, 
+    public EstoqueService(ProdutoRepository produtoRepository,
                           MovimentacaoEstoqueRepository movimentacaoEstoqueRepository) {
         this.produtoRepository = produtoRepository;
         this.movimentacaoEstoqueRepository = movimentacaoEstoqueRepository;
@@ -39,10 +39,11 @@ public class EstoqueService {
         produto.setEstoqueSaldo(produto.getEstoqueSaldo().subtract(quantidade));
         produtoRepository.save(produto);
 
-        MovimentacaoEstoque mov = new MovimentacaoEstoque(produto, TipoMovimentacao.SAIDA_VENDA, quantidade, pedidoId);
+        MovimentacaoEstoque mov = new MovimentacaoEstoque(
+            produto, TipoMovimentacao.SAIDA_VENDA, quantidade, pedidoId
+        );
         movimentacaoEstoqueRepository.save(mov);
     }
-
 
     @Transactional
     public void estornarEstoque(Long produtoId, BigDecimal quantidade, Long pedidoId) {
@@ -52,7 +53,9 @@ public class EstoqueService {
         produto.setEstoqueSaldo(produto.getEstoqueSaldo().add(quantidade));
         produtoRepository.save(produto);
 
-        MovimentacaoEstoque mov = new MovimentacaoEstoque(produto, TipoMovimentacao.ESTORNO_CANCELAMENTO, quantidade, pedidoId);
+        MovimentacaoEstoque mov = new MovimentacaoEstoque(
+            produto, TipoMovimentacao.ESTORNO_CANCELAMENTO, quantidade, pedidoId
+        );
         movimentacaoEstoqueRepository.save(mov);
     }
 }
